@@ -44,7 +44,7 @@ class ExponaDB:
             # USER
             t.execute("CREATE TABLE user (user char(100) primary key, pass char(100))")
             # LOG
-            t.execute("CREATE TABLE log (id integer primary key, user char(100), time integer, path char(100), type char(10), body char(1000))")
+            t.execute("CREATE TABLE log (id integer primary key, user char(100), time real, path char(100), type char(10), body char(1000))")
 
     def authenticate(self, user, password):
         """Return True if user, password pair exists in database."""
