@@ -52,4 +52,4 @@ class ExponentCalculator:
 
         cartesian = product(numbers, self.exponents)
         for x, y in cartesian:
-            yield "({x})^({y}) = {z}".format(x=x, y=y, z=x**y)
+            yield ((x, y), x**y)
