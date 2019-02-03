@@ -6,10 +6,13 @@ from contextlib import contextmanager
 from config import ROOT_DIR
 from os import path
 import sqlite3
+from collections import namedtuple
 from utils.expona_logging import logger_factory
+from utils.expona_time import epoch_now
 
 
 DB_NAME = path.join(ROOT_DIR, "data", "expona.db")
+ExponaLog = namedtuple("ExponaLog", "path type time body")
 logger = logger_factory("db")
 
 
@@ -88,3 +91,32 @@ class ExponaDB:
                       (user, timestamp, event_path, event_type, event_body))
 
         return True
+
+    def retrieve_expona_logs(self, user, before=None, exclude_get=True):
+        """
+        Retrieve all entries from the 'log' table for user that were recorded before some time point.
+
+        Parameters
+        ----------
+        exclude_post: bool
+                      If True, exclude /user/<username>/expona POST requests.
+        """
+
+        if not before:
+            before = epoch_now()
+
+        if exclude_get:
+            where_clause = "type <> 'GET'"
+        else:
+            where_clause = "1 = 1"
+
+        with self.transaction() as t:
+            results = t.execute(
+                    "SELECT path, type, time, body FROM log WHERE user = ? AND time <= ? AND {where}".format(
+                     where=where_clause), (user, before)).fetchall()
+
+        logs = []
+        for r in results:
+            logs.append(ExponaLog(path=r[0], type=r[1], time=r[2], body=r[3]))
+
+        return logs
