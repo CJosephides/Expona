@@ -1,0 +1,24 @@
+upstream _bottle {
+    server unix:/run/uwsgi/sock;
+}
+#upstream defines common block that can be shared by different derivatives. 
+
+server {
+    listen [::]:80;
+    listen 80;
+    server_name localhost;
+    #make sure it is accessible through localhost
+    root /var/www/Expona;
+
+    location / {
+        try_files $uri @uwsgi;
+        #try files will try to load $uri, if it does not exist, then @uwsgi will be called instead.
+    }
+
+    location @uwsgi {
+        include uwsgi_params;
+        #include uwsgi parameters.
+        uwsgi_pass _bottle;
+        #tell nginx to communicate with uwsgi though unix socket /run/uwsgi/sock.
+    }
+}
